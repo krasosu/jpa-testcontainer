@@ -4,3 +4,21 @@
 -- Example: ensure email is unique (Postgres syntax)
 -- ALTER TABLE authors ADD CONSTRAINT uq_authors_email UNIQUE (email);
 
+-- Join-table example (Post <-> Tag)
+-- We map it as an entity and keep constraints predictable:
+-- - FK to posts/tags, with ON DELETE CASCADE to avoid orphans.
+-- - NO unique constraint on (post_id, tag_id) so legacy/prod code that inserts duplicates
+--   does not fail with constraint violations. If you can guarantee no duplicates, add it.
+ALTER TABLE IF EXISTS post_tag_links
+  DROP CONSTRAINT IF EXISTS fk_post_tag_links_post;
+ALTER TABLE IF EXISTS post_tag_links
+  DROP CONSTRAINT IF EXISTS fk_post_tag_links_tag;
+
+ALTER TABLE IF EXISTS post_tag_links
+  ADD CONSTRAINT fk_post_tag_links_post
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE;
+
+ALTER TABLE IF EXISTS post_tag_links
+  ADD CONSTRAINT fk_post_tag_links_tag
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE;
+

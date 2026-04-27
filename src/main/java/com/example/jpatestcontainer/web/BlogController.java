@@ -6,9 +6,12 @@ import com.example.jpatestcontainer.domain.Author;
 import com.example.jpatestcontainer.domain.Blog;
 import com.example.jpatestcontainer.domain.Comment;
 import com.example.jpatestcontainer.domain.Post;
+import com.example.jpatestcontainer.domain.PostTagLink;
 import com.example.jpatestcontainer.domain.Tag;
 import com.example.jpatestcontainer.repo.BlogRepository;
 import com.example.jpatestcontainer.repo.PostRepository;
+import com.example.jpatestcontainer.repo.PostTagLinkRepository;
+import com.example.jpatestcontainer.repo.TagRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -27,10 +30,18 @@ import org.springframework.web.server.ResponseStatusException;
 public class BlogController {
   private final BlogRepository blogRepository;
   private final PostRepository postRepository;
+  private final TagRepository tagRepository;
+  private final PostTagLinkRepository postTagLinkRepository;
 
-  public BlogController(BlogRepository blogRepository, PostRepository postRepository) {
+  public BlogController(
+      BlogRepository blogRepository,
+      PostRepository postRepository,
+      TagRepository tagRepository,
+      PostTagLinkRepository postTagLinkRepository) {
     this.blogRepository = blogRepository;
     this.postRepository = postRepository;
+    this.tagRepository = tagRepository;
+    this.postTagLinkRepository = postTagLinkRepository;
   }
 
   @PostMapping
@@ -154,6 +165,30 @@ public class BlogController {
 
     return new CommentResponse(
         comment.getId(), blogId, post == null ? null : post.getId(), comment.getAuthorName(), comment.getText());
+  }
+
+  @PostMapping("/{blogId}/posts/{postId}/tags")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Transactional
+  public void linkTagToPost(
+      @PathVariable Long blogId, @PathVariable Long postId, @Valid @RequestBody LinkTagToPostRequest request) {
+    Post post =
+        postRepository
+            .findById(postId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+    if (!post.getBlog().getId().equals(blogId)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Post is not part of this blog");
+    }
+
+    Tag tag =
+        tagRepository
+            .findById(request.tagId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found"));
+    if (!tag.getBlog().getId().equals(blogId)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag is not part of this blog");
+    }
+
+    postTagLinkRepository.save(PostTagLink.builder().post(post).tag(tag).build());
   }
 }
 

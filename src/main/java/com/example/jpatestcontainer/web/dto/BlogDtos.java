@@ -25,6 +25,8 @@ public final class BlogDtos {
 
   public record TagResponse(Long id, Long blogId, String name) {}
 
+  public record LinkTagToPostRequest(Long tagId) {}
+
   public record CreateCommentRequest(
       Long postId, @NotBlank @Size(max = 120) String authorName, @NotBlank String text) {}
 
