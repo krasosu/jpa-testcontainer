@@ -86,6 +86,20 @@ public class BlogController {
             .toList());
   }
 
+  /**
+   * Example endpoint: returns the JPA entity directly.
+   *
+   * <p>To avoid LazyInitializationException with open-in-view disabled, the repository method uses
+   * an EntityGraph to fetch all required children in the same transaction.
+   */
+  @GetMapping("/{blogId}/entity")
+  @Transactional(readOnly = true)
+  public Blog getBlogEntity(@PathVariable Long blogId) {
+    return blogRepository
+        .findWithChildrenById(blogId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog not found"));
+  }
+
   @PostMapping("/{blogId}/posts")
   @ResponseStatus(HttpStatus.CREATED)
   public PostResponse addPost(@PathVariable Long blogId, @Valid @RequestBody CreatePostRequest request) {

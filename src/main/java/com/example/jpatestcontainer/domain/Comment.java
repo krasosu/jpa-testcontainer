@@ -1,5 +1,6 @@
 package com.example.jpatestcontainer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,10 +30,12 @@ public class Comment {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "blog_id", nullable = false)
+  @JsonIgnore
   private Blog blog;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
   @JoinColumn(name = "post_id")
+  @JsonIgnore
   private Post post;
 
   @Column(nullable = false, length = 120)

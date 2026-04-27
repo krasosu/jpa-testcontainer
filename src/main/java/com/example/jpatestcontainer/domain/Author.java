@@ -1,5 +1,6 @@
 package com.example.jpatestcontainer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,6 +30,7 @@ public class Author {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "blog_id", nullable = false)
+  @JsonIgnore
   private Blog blog;
 
   @Column(nullable = false, length = 120)

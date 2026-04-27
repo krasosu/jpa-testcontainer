@@ -1,5 +1,6 @@
 package com.example.jpatestcontainer.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -28,10 +29,12 @@ public class PostTagLink {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "post_id", nullable = false)
+  @JsonIgnore
   private Post post;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "tag_id", nullable = false)
+  @JsonIgnore
   private Tag tag;
 }
 

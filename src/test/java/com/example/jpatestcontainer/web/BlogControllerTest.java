@@ -56,5 +56,37 @@ class BlogControllerTest extends AbstractControllerIT {
         .andExpect(jsonPath("$.posts.length()").value(1))
         .andExpect(jsonPath("$.posts[0].title").value("Hello"));
   }
+
+  @Test
+  void getBlogEntity_usesEntityGraphSoLazyCollectionsAreInitialized() throws Exception {
+    MvcResult createdBlog =
+        mockMvc
+            .perform(
+                post("/api/blogs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {"name":"Entity Blog"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    long blogId = objectMapper.readTree(createdBlog.getResponse().getContentAsString()).get("id").asLong();
+
+    mockMvc
+        .perform(
+            post("/api/blogs/{blogId}/posts", blogId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                        {"title":"P1","body":"B1"}
+                        """))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/blogs/{blogId}/entity", blogId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value((int) blogId))
+        .andExpect(jsonPath("$.posts.length()").value(1));
+  }
 }
 
